@@ -24,6 +24,7 @@ import keras.engine as KE
 import keras.models as KM
 
 from mrcnn import utils
+from mrcnn.non_local import non_local_block
 
 # Requires TensorFlow 1.3+ and Keras 2.0.8+.
 from distutils.version import LooseVersion
@@ -194,6 +195,9 @@ def resnet_graph(input_image, architecture, stage5=False, train_bn=True):
     x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a', train_bn=train_bn)
     block_count = {"resnet50": 5, "resnet101": 22}[architecture]
     for i in range(block_count):
+        if i == (block_count - 1):
+            print("adding Non local blocks")
+            x = non_local_block(x, mode='embedded', compression=2) # by csz
         x = identity_block(x, 3, [256, 256, 1024], stage=4, block=chr(98 + i), train_bn=train_bn)
     C4 = x
     # Stage 5
